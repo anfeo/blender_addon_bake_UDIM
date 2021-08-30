@@ -14,7 +14,11 @@ bl_info = {
 import bpy
 import os
 import bmesh
+from bpy.types import (
+        Operator,
+        Panel,
 
+        )
 def uv_traslate(obj,i):
     me = obj.data
     bm = bmesh.new()
@@ -33,7 +37,7 @@ def uv_traslate(obj,i):
 
 
 def bake_udim(context):
-    obj = context.scene.view_layers[0].objects.active
+    obj = context.object
     
     data = bpy.data
     images = data.images
@@ -116,34 +120,54 @@ def bake_udim(context):
         print("Select Udim Node")
         
         
-class SCENE_OT_Bake_Udim(bpy.types.Operator):
+class SCENE_OT_Bake_Udim(Operator):
     """Select a UDIM Image Node"""
     bl_idname = "object.bake_udim"
     bl_label = "Bake for UDIM Image"
 
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None
+        return context.object is not None
 
     def execute(self, context):
-        
-        bake_udim(bpy.context)
+        print(context.object)
+        bake_udim(context)
         
         return {'FINISHED'}
 
-def menu_func(self, context):
+
+class SCENE_PT_BakeUDIM(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Bake UDIM"
     
-    layout = self.layout
-    layout.operator("object.bake_udim")
+    bl_label = "Bake UDIM"
+    #bl_options = {'DEFAULT_CLOSED'}
+    
+    
+    
+    def draw(self, context):
+         
+        scene = context.scene
+        layout = self.layout
+        layout.operator("object.bake_udim")
+
+
+#def menu_func(self, context):
+#    
+#    layout = self.layout
+#    layout.operator("object.bake_udim")
 
 
 def register():
     bpy.utils.register_class(SCENE_OT_Bake_Udim)
-    bpy.types.CYCLES_RENDER_PT_bake.append(menu_func)
+    bpy.utils.register_class(SCENE_PT_BakeUDIM)
+    #bpy.types.CYCLES_RENDER_PT_bake.append(menu_func)
 
 def unregister():
     bpy.utils.unregister_class(SCENE_OT_Bake_Udim)
-    bpy.types.CYCLES_RENDER_PT_bake.remove(menu_func)
+    bpy.utils.unregister_class(SCENE_PT_BakeUDIM)
+    #bpy.types.CYCLES_RENDER_PT_bake.remove(menu_func)
 
 if __name__ == "__main__":
     register()
